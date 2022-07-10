@@ -1,0 +1,59 @@
+http:
+  routers:
+    www:
+      entryPoints:
+        - "https"
+      rule: "Host(`www.example.com`)"
+      middlewares:
+        - secured
+      tls: {}
+      service: www
+
+  services:
+    www:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.10"
+        passHostHeader: true
+
+  middlewares:
+    addprefix-wiki:
+      addPrefix:
+        prefix: "/admin"
+
+    default-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 15552000
+        customFrameOptionsValue: SAMEORIGIN
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+
+    default-whitelist:
+      ipWhiteList:
+        sourceRange:
+          - "10.0.0.0/8"
+          - "192.168.0.0/16"
+          - "172.16.0.0/12"
+
+    default-ratelimit:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 10s
+
+    secured:
+      chain:
+        middlewares:
+        - default-ratelimit
+        - default-headers
+
+    crowdsec-bouncer:
+      forwardauth:
+        address: http://bouncer-traefik:8080/api/v1/forwardAuth
+        trustForwardHeader: true

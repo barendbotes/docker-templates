@@ -1,0 +1,29 @@
+version: '3.5'
+
+services:
+  nginx-test:
+    image: nginx
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.nginx.entrypoints=https
+      - traefik.http.routers.nginx.rule=Host(`test.example.com`) # Your web addres for your site
+      - traefik.http.services.nginx-service.loadbalancer.passhostheader=true
+      - traefik.http.services.nginx-service.loadbalancer.server.port=80 # The port that the container is exposed on
+      - traefik.http.services.nginx-service.loadbalancer.server.scheme=http # The scheme for the container port
+      - traefik.http.services.nginx-service.loadbalancer.sticky.cookie=true
+      - traefik.http.services.nginx-service.loadbalancer.sticky.cookie.httponly=true
+      - traefik.http.services.nginx-service.loadbalancer.sticky.cookie.secure=true
+      - traefik.http.services.nginx-service.loadbalancer.sticky.cookie.samesite=strict
+      - traefik.http.services.nginx-service.loadbalancer.sticky.cookie.name=nginx-test_lvl # Cookie name for more security - I assume...
+      - traefik.http.routers.nginx.tls=true
+      - traefik.http.routers.nginx.middlewares=secured@file
+
+networks:
+  proxy:
+    external: true
