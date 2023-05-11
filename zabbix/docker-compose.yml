@@ -1,0 +1,116 @@
+version: "3.8"
+networks:
+  zabbix:
+  proxy:
+    external: true
+  backend_sql:
+    external: true
+
+services:
+  zabbix-server-pgsql:
+    image: zabbix/zabbix-server-pgsql:${VERSION}
+    env_file: .env
+    environment:
+      - DB_SERVER_HOST=${DB_SERVER_HOST}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - ZBX_STARTJAVAPOLLERS=5
+      - ZBX_STARTVMWARECOLLECTORS=5
+      - ZBX_HOSTNAME=zabbix-server-pgsql
+      - ZBX_STARTPINGERS=20
+    volumes:
+      - zabbix-var:/var/lib/zabbix
+      - zabbix-usr:/usr/lib/zabbix
+      - /etc/localtime:/etc/localtime:ro
+      - zabbix-export:/var/lib/zabbix/export
+      - zabbix-snmptraps:/var/lib/zabbix/snmptraps
+    ports:
+      - "10051:10051"
+    restart: unless-stopped
+    networks:
+      zabbix:
+        aliases:
+          - zabbix-server
+          - zabbix-server-pgsql
+          - zabbix-server-ubuntu-pgsql
+          - zabbix-server-pgsql-ubuntu
+      backend_sql:
+    labels:
+      com.zabbix.description: "Zabbix server with pgsql database support"
+      com.zabbix.company: "Zabbix LLC"
+      com.zabbix.component: "zabbix-server-pgsql"
+      com.zabbix.dbtype: "pgsql"
+      com.zabbix.os: "ubuntu"
+
+  zabbix-agent2:
+    image: zabbix/zabbix-agent2:${VERSION}
+    env_file: .env
+    environment:
+      - ZBX_STARTJAVAPOLLERS=5
+      - ZBX_STARTVMWARECOLLECTORS=5
+      - ZBX_HOSTNAME=zabbix-agent2
+      - ZBX_SERVER_HOST=zabbix-server-pgsql
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    networks:
+      zabbix:
+        aliases:
+          - zabbix-agent2
+      backend_sql:
+    labels:
+      com.zabbix.description: "Zabbix agent2"
+      com.zabbix.company: "Zabbix LLC"
+      com.zabbix.component: "zabbix-agent2"
+      com.zabbix.dbtype: "pgsql"
+      com.zabbix.os: "ubuntu"
+
+  zabbix-web-apache-pgsql:
+    image: zabbix/zabbix-web-apache-pgsql:${VERSION}
+    env_file: .env
+    environment:
+      - ZBX_SERVER_HOST=${ZBX_SERVER_HOST}
+      - DB_SERVER_HOST=${DB_SERVER_HOST}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - /etc/localtime:/etc/localtime:ro
+      - ZBX_SERVER_NAME=Zabbix Container
+    restart: unless-stopped
+    depends_on:
+     - zabbix-server-pgsql
+    networks:
+      zabbix:
+      backend_sql:
+      proxy:
+        aliases:
+          - zabbix-frontend.docker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.${SERVICE}.entrypoints=https"
+      - "traefik.http.routers.${SERVICE}.rule=Host(`${URL}`)"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.passhostheader=true"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.server.port=${PORT}"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.server.scheme=${SCHEME}"
+      - "traefik.http.routers.${SERVICE}.tls=true"
+      - "traefik.http.routers.${SERVICE}.middlewares=secured@file"
+      - "com.zabbix.description:=Zabbix frontend on Nginx web-server with PostgreSQL database support"
+      - "com.zabbix.company=Zabbix LLC"
+      - "com.zabbix.component=zabbix-web-nginx-pgsql"
+      - "com.zabbix.webserver=nginx"
+      - "com.zabbix.dbtype=pgsql"
+      - "com.zabbix.os=ubuntu"
+
+volumes:
+  zabbix-var:
+  zabbix-usr:
+  zabbix-snmptraps:
+  zabbix-export:

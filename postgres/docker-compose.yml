@@ -1,0 +1,27 @@
+version: '3.5'
+services:
+  postgresql:
+    image: postgres:15-alpine
+    volumes:
+      - './data:/var/lib/postgresql/data'
+    env_file: .env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+    networks:
+      backend_sql:
+        aliases:
+          - postgres.docker
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+
+networks:
+  backend_sql:
+    external: true

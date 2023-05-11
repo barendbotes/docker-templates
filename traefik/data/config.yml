@@ -8,12 +8,26 @@ http:
         - secured
       tls: {}
       service: www
+    private:
+      entryPoints:
+        - "https"
+      rule: "Host(`private.example.com`)"
+      middlewares:
+        - authelia
+        - secured
+      tls: {}
+      service: private
 
   services:
     www:
       loadBalancer:
         servers:
           - url: "http://192.168.1.10"
+        passHostHeader: true
+    private:
+      loadBalancer:
+        servers:
+          - url: "http://192.168.1.11"
         passHostHeader: true
 
   middlewares:
@@ -34,7 +48,7 @@ http:
         customRequestHeaders:
           X-Forwarded-Proto: https
 
-    default-whitelist:
+    local-whitelist:
       ipWhiteList:
         sourceRange:
           - "10.0.0.0/8"
@@ -43,8 +57,8 @@ http:
 
     default-ratelimit:
       rateLimit:
-        average: 100
-        burst: 50
+        average: 1000
+        burst: 500
         period: 10s
 
     secured:
@@ -52,8 +66,20 @@ http:
         middlewares:
         - default-ratelimit
         - default-headers
+        - crowdsec-bouncer
+
+    local:
+      chain:
+        middlewares:
+        - default-ratelimit
+        - default-headers
+        - default-whitelist
 
     crowdsec-bouncer:
       forwardauth:
         address: http://bouncer-traefik:8080/api/v1/forwardAuth
         trustForwardHeader: true
+
+    authelia:
+      forwardauth:
+        address: http://authelia:9091/api/verify?rd=https://login.auth.domain.com
