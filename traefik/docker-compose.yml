@@ -19,7 +19,7 @@ services:
         mode: host
     environment:
       - CF_API_EMAIL=user@example.com
-      - CF_API_KEY=your-secure-api-key
+      - CF_API_KEY=<your-secure-api-key>
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
