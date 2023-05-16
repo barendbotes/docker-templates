@@ -1,0 +1,40 @@
+version: '3.5'
+services:
+  wikijs:
+    image: ghcr.io/requarks/wiki:2
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: postgres.docker
+      DB_PORT: 5432
+      DB_USER: ${POSTGRESQL_USERNAME}
+      DB_PASS: ${POSTGRESQL_PASSWORD}
+      DB_NAME: ${POSTGRESQL_DATABASE}
+    restart: unless-stopped
+    networks:
+      proxy:
+      backend_sql:
+    volumes:
+      - './data:/wiki/data/content'
+      - './favicons:/wiki/assets/favicons/'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.${SERVICE}.entrypoints=https"
+      - "traefik.http.routers.${SERVICE}.rule=Host(`${URL}`)"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.passhostheader=true"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.server.port=${PORT}"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.server.scheme=${SCHEME}"
+      - "traefik.http.routers.${SERVICE}.tls=true"
+      - "traefik.http.routers.${SERVICE}.middlewares=secured@file"
+
+networks:
+  proxy:
+    external: true
+  backend_sql:
+    external: true

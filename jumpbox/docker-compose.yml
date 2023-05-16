@@ -1,0 +1,68 @@
+version: "3.5"
+networks:
+  backend_sql:
+    external: true
+  proxy:
+    external: true
+  backend:
+services:
+  guacd:
+    image: keeper/guacd
+    networks:
+      backend:
+    environment:
+      ACCEPT_EULA: 'Y'
+    volumes:
+      - "./jumpbox-data/data:/var/lib/guacamole:rw"
+
+  guacamole:
+    image: keeper/guacamole
+    networks:
+      backend_sql:
+      proxy:
+      backend:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - "./jumpbox-data/data:/var/lib/guacamole:rw"
+      # - "./jumpbox-data/extensions/branding.jar:/etc/guacamole/extensions/kcm-branding.jar:ro"
+    environment:
+      USE_DEFAULT_BRANDING: "Y"
+      ACCEPT_EULA: 'Y'
+      GUACD_HOSTNAME: guacd
+      GUACD_PORT: 4822
+      GUACD_LOG_LEVEL: debug
+      GUACAMOLE_ADMIN_PASSWORD: <complex-long-password>
+      POSTGRES_HOSTNAME: postgres.docker
+      POSTGRES_DATABASE: jumpbox-db
+      POSTGRES_USERNAME: jumpbox-user
+      POSTGRES_PASSWORD: <complex-long-password
+      POSTGRES_AUTO_CREATE_ACCOUNTS: true
+      ADDITIONAL_GUACAMOLE_PROPERTIES: "extension-priority: *, openid"
+      # OPENID_AUTHORIZATION_ENDPOINT: https://login.microsoftonline.com/<company-id>/oauth2/v2.0/authorize
+      # OPENID_JWKS_ENDPOINT: https://login.microsoftonline.com/<company-id>/discovery/v2.0/keys
+      # OPENID_CLIENT_ID: <client-id>
+      # OPENID_ISSUER: https://login.microsoftonline.com/<company-id>/v2.0
+      # OPENID_REDIRECT_URI: https://jumpbox.domina.com
+      OPENID_CLIENT_ID: jumpbox
+      OPENID_SCOPE: openid profile groups email
+      OPENID_ISSUER: https://login.auth.domain.com
+      OPENID_JWKS_ENDPOINT: https://login.auth.domain.com/jwks.json
+      OPENID_AUTHORIZATION_ENDPOINT: https://login.auth.domain.com/api/oidc/authorization?state=1234abcedfdhf
+      OPENID_REDIRECT_URI: https://jumpbox.domain.com
+      OPENID-USERNAME-CLAIM-TYPE: preferred_username
+      OPENID-GROUP-CLAIM-TYPE: groups
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.${SERVICE}.entrypoints=https"
+      - "traefik.http.routers.${SERVICE}.rule=Host(`${URL}`)"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.passhostheader=true"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.server.port=${PORT}"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.server.scheme=${SCHEME}"
+      - "traefik.http.routers.${SERVICE}.tls=true"
+      - "traefik.http.routers.${SERVICE}.middlewares=secured@file"

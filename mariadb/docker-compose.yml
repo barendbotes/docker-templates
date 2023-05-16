@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  mariadb:
+    image: mariadb:${VERSION:-latest}
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=Africa/Johannesburg
+    volumes:
+      - ./data:/var/lib/mysql
+    command: [ "mysqld",
+                "--bind-address=0.0.0.0",
+                "--default_authentication_plugin=mysql_native_password",
+                "--max_allowed_packet=2G",
+                "--performance_schema=ON",
+                "--performance-schema-instrument='stage/%=ON'",
+                "--performance-schema-consumer-events-stages-current=ON",
+                "--performance-schema-consumer-events-stages-history=ON",
+                "--performance-schema-consumer-events-stages-history-long=ON"
+                ]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", '-p${MYSQL_ROOT_PASSWORD}']
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      backend_mariadb:
+        aliases:
+          - mariadb.docker
+    ports:
+      - 3307:3306
+
+networks:
+  backend_mariadb:
+    external: true

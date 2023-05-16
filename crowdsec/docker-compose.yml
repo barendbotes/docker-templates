@@ -14,16 +14,16 @@ services:
       - proxy
     restart: unless-stopped
 
-  # bouncer-traefik:
-  #   image: docker.io/fbonalair/traefik-crowdsec-bouncer:latest
-  #   environment:
-  #     CROWDSEC_BOUNCER_API_KEY: super-secure-bouncer-api-key
-  #     CROWDSEC_AGENT_HOST: crowdsec:8080
-  #     CROWDSEC_BOUNCER_LOG_LEVEL: 0
-  #     GIN_MODE: release
-  #   networks:
-  #     - proxy
-  #   restart: unless-stopped
+  bouncer-traefik:
+    image: docker.io/fbonalair/traefik-crowdsec-bouncer:latest
+    environment:
+      CROWDSEC_BOUNCER_API_KEY: super-secure-bouncer-api-key
+      CROWDSEC_AGENT_HOST: crowdsec:8080
+      CROWDSEC_BOUNCER_LOG_LEVEL: 0
+      GIN_MODE: release
+    networks:
+      - proxy
+    restart: unless-stopped
 
 networks:
   proxy:
