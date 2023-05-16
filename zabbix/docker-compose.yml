@@ -101,7 +101,7 @@ services:
       - "traefik.http.services.${SERVICE}-service.loadbalancer.server.port=${PORT}"
       - "traefik.http.services.${SERVICE}-service.loadbalancer.server.scheme=${SCHEME}"
       - "traefik.http.routers.${SERVICE}.tls=true"
-      - "traefik.http.routers.${SERVICE}.middlewares=secured@file"
+      - "traefik.http.routers.${SERVICE}.middlewares=secured-chain@file"
       - "com.zabbix.description:=Zabbix frontend on Nginx web-server with PostgreSQL database support"
       - "com.zabbix.company=Zabbix LLC"
       - "com.zabbix.component=zabbix-web-nginx-pgsql"

@@ -61,14 +61,14 @@ http:
         burst: 500
         period: 10s
 
-    secured:
+    secured-chain:
       chain:
         middlewares:
         - default-ratelimit
         - default-headers
         - crowdsec-bouncer
 
-    local:
+    local-chain:
       chain:
         middlewares:
         - default-ratelimit

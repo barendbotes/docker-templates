@@ -22,7 +22,7 @@ services:
       - traefik.http.services.nginx-service.loadbalancer.sticky.cookie.samesite=strict
       - traefik.http.services.nginx-service.loadbalancer.sticky.cookie.name=nginx-test_lvl # Cookie name for more security - I assume...
       - traefik.http.routers.nginx.tls=true
-      - traefik.http.routers.nginx.middlewares=secured@file
+      - traefik.http.routers.nginx.middlewares=secured-chain@file
 
 networks:
   proxy:

@@ -31,7 +31,7 @@ services:
       - "traefik.http.services.${SERVICE}-service.loadbalancer.server.port=${PORT}"
       - "traefik.http.services.${SERVICE}-service.loadbalancer.server.scheme=${SCHEME}"
       - "traefik.http.routers.${SERVICE}.tls=true"
-      - "traefik.http.routers.${SERVICE}.middlewares=secured@file"
+      - "traefik.http.routers.${SERVICE}.middlewares=secured-chain@file"
 
 networks:
   proxy:
