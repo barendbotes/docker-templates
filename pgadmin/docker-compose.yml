@@ -11,7 +11,7 @@ services:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
     volumes:
-      - './data:/var/lib/pgadmin'
+      - pgadmin-data:/var/lib/pgadmin
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
@@ -34,3 +34,5 @@ networks:
     external: true
   backend_sql:
     external: true
+volumes:
+  pgadmin-data:

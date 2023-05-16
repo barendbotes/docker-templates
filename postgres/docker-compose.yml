@@ -3,7 +3,7 @@ services:
   postgresql:
     image: postgres:15-alpine
     volumes:
-      - './data:/var/lib/postgresql/data'
+      - postgres-data:/var/lib/postgresql/data
     env_file: .env
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -25,3 +25,5 @@ services:
 networks:
   backend_sql:
     external: true
+volumes:
+  postgres-data:

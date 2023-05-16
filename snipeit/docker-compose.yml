@@ -37,10 +37,11 @@ services:
       - MAIL_ENV_FROM_ADDR=${MAIL_ENV_FROM_ADDR}
       - MAIL_ENV_FROM_NAME=${MAIL_ENV_FROM_NAME}
     volumes:
-      - ./data:/config
+      - snipeit-data:/config
     restart: unless-stopped
 
 volumes:
+  snipeit-data:
 networks:
   backend_mariadb:
     external: true

@@ -14,7 +14,7 @@ services:
       proxy:
       backend_sql:
     volumes:
-      - './data:/wiki/data/content'
+      - wikijs-data:/wiki/data/content
       - './favicons:/wiki/assets/favicons/'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/"]
@@ -38,3 +38,5 @@ networks:
     external: true
   backend_sql:
     external: true
+volumes:
+  wikijs-data:

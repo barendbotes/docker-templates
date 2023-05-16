@@ -6,6 +6,11 @@ networks:
     external: true
   backend:
 
+volumes:
+  n8n-data:
+  n8n-files:
+  n8n-redis:
+
 x-shared: &shared
   environment:
     - DOMAIN_NAME=domain.com
@@ -44,15 +49,15 @@ x-shared: &shared
     - backend_sql
     - backend
   volumes:
-    - ./data:/home/node/.n8n
-    - ./files:/files
+    - n8n-data:/home/node/.n8n
+    - n8n-files:/files
   restart: unless-stopped
 
 services:
   redis:
     image: redis:6-alpine
     volumes:
-      - ./redis:/data
+      - n8n-redis:/data
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 5s

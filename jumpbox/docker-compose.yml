@@ -28,8 +28,8 @@ services:
       retries: 3
       start_period: 30s
     volumes:
-      - "./jumpbox-data/data:/var/lib/guacamole:rw"
-      # - "./jumpbox-data/extensions/branding.jar:/etc/guacamole/extensions/kcm-branding.jar:ro"
+      - jumpbox-data:/var/lib/guacamole:rw
+      # - ./jumpbox-data/extensions/branding.jar:/etc/guacamole/extensions/kcm-branding.jar:ro
     environment:
       USE_DEFAULT_BRANDING: "Y"
       ACCEPT_EULA: 'Y'
@@ -66,3 +66,5 @@ services:
       - "traefik.http.services.${SERVICE}-service.loadbalancer.server.scheme=${SCHEME}"
       - "traefik.http.routers.${SERVICE}.tls=true"
       - "traefik.http.routers.${SERVICE}.middlewares=secured-chain@file"
+volumes:
+  jumpbox-data:

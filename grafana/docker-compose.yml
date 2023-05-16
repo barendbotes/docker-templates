@@ -43,7 +43,7 @@ services:
       GF_AUTH_GENERIC_OAUTH_ALLOW_ASSIGN_GRAFANA_ADMIN: true
       GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: contains(groups[*], 'admins') && 'GrafanaAdmin'
     volumes:
-    - ./data:/var/lib/grafana
+    - grafana-data:/var/lib/grafana
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
@@ -60,3 +60,5 @@ services:
         aliases:
           - grafana.cloud.instance01
       backend_sql:
+volumes:
+  grafana-data:
