@@ -10,7 +10,7 @@ log:
   level: debug
 theme: grey
 # This secret can also be set using the env variables AUTHELIA_JWT_SECRET_FILE randomly generated 64 char alphanumeric string
-jwt_secret: b7bZikb46iovYJm5sX8XqtHcK96Ni77Fw7YByjYhgMTLLKRc34xbBvSkR3ahcEUd
+jwt_secret: <random-64-alphanumeric-string> # tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64  ; echo
 default_redirection_url: https://login.auth.domain.com
 totp:
   issuer: login.auth.domain.com
@@ -47,7 +47,7 @@ access_control:
 session:
   name: authelia_session
   # This secret can also be set using the env variables AUTHELIA_SESSION_SECRET_FILE randomly generated 128 char alphanumeric string
-  secret: rN3NyyDyoaQaZhZnRqoB3oUw9PZSyoEXEufFAz7xxd5osR66STjxr6vXUt2w8UDXriwF9X5idorwrniyBwbV4HrBvCKfh47quyVj3MrC8ceFYKuRpPgqQTinBy6HoA2x
+  secret: <random-128-alphanumeric-string> # tr -dc 'A-Za-z0-9' </dev/urandom | head -c 128  ; echo
   expiration: 3600  # 1 hour
   inactivity: 300  # 5 minutes
   domain: domain.com  # Should match whatever your root protected domain is
@@ -64,7 +64,7 @@ regulation:
   ban_time: 300
 
 storage:
-  encryption_key: yK7PCLMjGFcksiX3aZGoy4xyJVk6iLk9MnmeuFMSWjG9m25acNJz4jJDahs39ZHX # Now required Random 65 char alphanumeric string
+  encryption_key: <random-64-alphanumeric-string> # tr -dc 'A-Za-z0-9' </dev/urandom | head -c 64  ; echo
   local:
     path: /config/db.sqlite3
 
