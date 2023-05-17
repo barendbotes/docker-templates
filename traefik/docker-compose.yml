@@ -18,8 +18,9 @@ services:
         protocol: tcp
         mode: host
     environment:
-      - CF_API_EMAIL=user@example.com
-      - CF_API_KEY=<your-secure-api-key>
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      # - CF_API_KEY=${CF_API_KEY}
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -30,20 +31,20 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.entrypoints=http"
-      - "traefik.http.routers.traefik.rule=Host(`traefik-dashboard.example.com`)"
-      - "traefik.http.middlewares.traefik-auth.basicauth.users=USER:PASSWORD_HASH"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DASH_URL}`)"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_HASH}"
       - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
       - "traefik.http.routers.traefik-secure.entrypoints=https"
-      - "traefik.http.routers.traefik-secure.rule=Host(`traefik-dashboard.example.com`)"
+      - "traefik.http.routers.traefik-secure.rule=Host(`${TRAEFIK_DASH_URL}`)"
       - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
       - "traefik.http.routers.traefik-secure.tls=true"
       - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
-      - "traefik.http.routers.traefik-secure.tls.domains[0].main=example.com"
-      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.example.com"
-      - "traefik.http.routers.traefik-secure.tls.domains[1].main=domain.com"
-      - "traefik.http.routers.traefik-secure.tls.domains[1].sans=*.domain.com"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].main=${DOMAIN_0}"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.${DOMAIN_0}"
+      # - "traefik.http.routers.traefik-secure.tls.domains[1].main=${DOMAIN_1}"
+      # - "traefik.http.routers.traefik-secure.tls.domains[1].sans=*.${DOMAIN_1}"
       - "traefik.http.routers.traefik-secure.service=api@internal"
 
 networks:

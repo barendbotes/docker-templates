@@ -9,8 +9,6 @@ entryPoints:
         entryPoint:
           to: https
           scheme: https
-#      middlewares:
-#        - crowdsec-bouncer@file
   https:
     address: ":443"
     http:
