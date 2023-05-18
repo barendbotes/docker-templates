@@ -10,7 +10,7 @@ services:
     ports:
       - 5432:5432
     networks:
-      backend_sql:
+      backend_postgres:
         aliases:
           - postgres.docker
     restart: unless-stopped
@@ -23,7 +23,7 @@ services:
 
 
 networks:
-  backend_sql:
+  backend_postgres:
     external: true
 volumes:
   postgres-data:

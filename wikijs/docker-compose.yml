@@ -12,7 +12,7 @@ services:
     restart: unless-stopped
     networks:
       proxy:
-      backend_sql:
+      backend_postgres:
     volumes:
       - wikijs-data:/wiki/data/content
       - './favicons:/wiki/assets/favicons/'
@@ -36,7 +36,7 @@ services:
 networks:
   proxy:
     external: true
-  backend_sql:
+  backend_postgres:
     external: true
 volumes:
   wikijs-data:

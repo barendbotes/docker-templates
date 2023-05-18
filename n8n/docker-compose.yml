@@ -2,7 +2,7 @@ version: '3.8'
 networks:
   proxy:
     external: true
-  backend_sql:
+  backend_postgres:
     external: true
   backend:
 
@@ -46,7 +46,7 @@ x-shared: &shared
     - N8N_ENCRYPTION_KEY=<random-alphanumeric-64-string>
   networks:
     - proxy
-    - backend_sql
+    - backend_postgres
     - backend
   volumes:
     - n8n-data:/home/node/.n8n

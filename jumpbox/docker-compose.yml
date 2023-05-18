@@ -1,6 +1,6 @@
 version: "3.5"
 networks:
-  backend_sql:
+  backend_postgres:
     external: true
   proxy:
     external: true
@@ -18,7 +18,7 @@ services:
   guacamole:
     image: keeper/guacamole
     networks:
-      backend_sql:
+      backend_postgres:
       proxy:
       backend:
     healthcheck:

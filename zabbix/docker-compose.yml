@@ -3,7 +3,7 @@ networks:
   zabbix:
   proxy:
     external: true
-  backend_sql:
+  backend_postgres:
     external: true
 
 services:
@@ -35,7 +35,7 @@ services:
           - zabbix-server-pgsql
           - zabbix-server-ubuntu-pgsql
           - zabbix-server-pgsql-ubuntu
-      backend_sql:
+      backend_postgres:
     labels:
       com.zabbix.description: "Zabbix server with pgsql database support"
       com.zabbix.company: "Zabbix LLC"
@@ -58,7 +58,7 @@ services:
       zabbix:
         aliases:
           - zabbix-agent2
-      backend_sql:
+      backend_postgres:
     labels:
       com.zabbix.description: "Zabbix agent2"
       com.zabbix.company: "Zabbix LLC"
@@ -82,7 +82,7 @@ services:
      - zabbix-server-pgsql
     networks:
       zabbix:
-      backend_sql:
+      backend_postgres:
       proxy:
         aliases:
           - zabbix-frontend.docker

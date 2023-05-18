@@ -5,7 +5,7 @@ services:
     image: dpage/pgadmin4:latest
     networks:
       - proxy
-      - backend_sql
+      - backend_postgres
     env_file: .env
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
@@ -32,7 +32,7 @@ services:
 networks:
   proxy:
     external: true
-  backend_sql:
+  backend_postgres:
     external: true
 volumes:
   pgadmin-data:
