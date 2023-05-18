@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  invoiceninja:
+    image: invoiceninja/invoiceninja:latest
+    restart: unless-stopped
+    environment:
+      - APP_ENV='production'
+      - APP_DEBUG=0
+      - APP_URL=${URL}
+      - APP_KEY=${APP_KEY}
+      - APP_CIPHER='AES-256-CBC'
+      - DB_TYPE=${DB_TYPE}
+      - DB_STRICT=${DB_STRICT}
+      - DB_HOST=${DB_HOST}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - PHANTOMJS_CLOUD_KEY=${PHANTOMJS_CLOUD_KEY}
+    volumes:
+      - invoiceninja-public:/var/invoiceninja/public
+      - invoiceninja-storage:/var/invoiceninja/storage
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.${SERVICE}.entrypoints=https"
+      - "traefik.http.routers.${SERVICE}.rule=Host(`${URL}`)"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.passhostheader=true"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.server.port=${PORT}"
+      - "traefik.http.services.${SERVICE}-service.loadbalancer.server.scheme=${SCHEME}"
+      - "traefik.http.routers.${SERVICE}.tls=true"
+      - "traefik.http.routers.${SERVICE}.middlewares=secured-chain@file"
+    networks:
+      - proxy
+      - backend_mariadb
+networks:
+  proxy:
+    external: true
+  backend_mariadb:
+    external: true
