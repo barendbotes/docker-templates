@@ -5,7 +5,7 @@ http:
         - "https"
       rule: "Host(`www.example.com`)"
       middlewares:
-        - secured
+        - public-chain
       tls: {}
       service: www
     private:
@@ -13,8 +13,7 @@ http:
         - "https"
       rule: "Host(`private.example.com`)"
       middlewares:
-        - authelia
-        - secured
+        - public-chain
       tls: {}
       service: private
 
@@ -44,7 +43,7 @@ http:
         customRequestHeaders:
           X-Forwarded-Proto: https
 
-    local-whitelist:
+    default-whitelist:
       ipWhiteList:
         sourceRange:
           - "10.0.0.0/8"
@@ -57,21 +56,48 @@ http:
         burst: 500
         period: 10s
 
-    secured-chain:
+    public-whitelist:
+      ipWhiteList:
+        sourceRange:
+          - "10.0.0.0/8"
+          - "192.168.0.0/16"
+          - "172.16.0.0/12"
+          - "1.1.1.1" # Your Public IP
+        ipstrategy:
+          depth: 1
+
+    public-chain:
       chain:
         middlewares:
         - default-ratelimit
         - default-headers
         - crowdsec-bouncer
 
-    local-chain:
+    private-chain:
       chain:
         middlewares:
         - default-ratelimit
         - default-headers
-        - default-whitelist
+        - public-whitelist
 
     crowdsec-bouncer:
       forwardauth:
         address: http://bouncer-traefik:8080/api/v1/forwardAuth
         trustForwardHeader: true
+
+    authentik:
+      forwardauth:
+        address: http://authentik-proxy:9000/outpost.goauthentik.io/auth/traefik
+        trustForwardHeader: true
+        authResponseHeaders:
+          - X-authentik-username
+          - X-authentik-groups
+          - X-authentik-email
+          - X-authentik-name
+          - X-authentik-uid
+          - X-authentik-jwt
+          - X-authentik-meta-jwks
+          - X-authentik-meta-outpost
+          - X-authentik-meta-provider
+          - X-authentik-meta-app
+          - X-authentik-meta-version
