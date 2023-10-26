@@ -13,7 +13,7 @@ http:
         - "https"
       rule: "Host(`private.example.com`)"
       middlewares:
-        - public-chain
+        - private-chain
       tls: {}
       service: private
 
@@ -56,7 +56,7 @@ http:
         burst: 500
         period: 10s
 
-    public-whitelist:
+    private-whitelist:
       ipWhiteList:
         sourceRange:
           - "10.0.0.0/8"
@@ -78,7 +78,8 @@ http:
         middlewares:
         - default-ratelimit
         - default-headers
-        - public-whitelist
+        - private-whitelist
+        # - crowdsec-bouncer
 
     crowdsec-bouncer:
       forwardauth:
