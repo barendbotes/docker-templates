@@ -99,4 +99,3 @@ services:
       - certbot-logs:/var/log/letsencrypt/
       - ./secrets/cloudflare.ini:/.secrets/cloudflare.ini:ro
     command: "certonly --non-interactive --dns-cloudflare --dns-cloudflare-credentials /.secrets/cloudflare.ini --preferred-challenges dns-01 --email ${EMAIL} -d *.${DOMAIN} --agree-tos"
-    # You can add email accounts by using the following command in CLI: setup email add email@domain.com
