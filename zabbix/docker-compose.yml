@@ -19,16 +19,38 @@ volumes:
   zabbix-snmptraps:
   zabbix-export:
 
-services:
-  zabbix-server-pgsql:
-    image: zabbix/zabbix-server-pgsql:${VERSION}
-    environment:
+x-shared:
+  zabbix-service: &zabbix-service
+    environment: &zabbix-environment
       DB_SERVER_HOST: ${DB_SERVER_HOST}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       ZBX_STARTJAVAPOLLERS: 5
       ZBX_STARTVMWARECOLLECTORS: 5
+      ZBX_SERVER_HOST: zabbix-server-pgsql
+      PHP_TZ: Africa/Johannesburg
+    networks: &zabbix-network
+      default:
+
+services:
+  zabbix-server-pgsql:
+    image: zabbix/zabbix-server-pgsql:${VERSION}
+    restart: unless-stopped
+    container_name: zabbix-server-pgsql
+    hostname: zabbix-server-pgsql
+    networks:
+      <<: *zabbix-network
+        aliases:
+          - zabbix-server
+          - zabbix-server-pgsql
+          - zabbix-server-ubuntu-pgsql
+          - zabbix-server-pgsql-ubuntu
+      database_network:
+    ports:
+      - "10051:10051"
+    environment:
+      <<: *zabbix-environment
       ZBX_HOSTNAME: zabbix-server-pgsql
       ZBX_STARTPINGERS: 20
       PHP_TZ: Africa/Johannesburg
@@ -38,18 +60,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - zabbix-export:/var/lib/zabbix/export
       - zabbix-snmptraps:/var/lib/zabbix/snmptraps
-      - ./zabbix-scripts:/usr/lib/zabbix/alertscripts/
-    ports:
-      - "10051:10051"
-    restart: unless-stopped
-    networks:
-      default:
-        aliases:
-          - zabbix-server
-          - zabbix-server-pgsql
-          - zabbix-server-ubuntu-pgsql
-          - zabbix-server-pgsql-ubuntu
-      database_network:
     labels:
       "com.centurylinklabs.watchtower.enable=true"
       "com.zabbix.description=Zabbix server with pgsql database support"
@@ -60,19 +70,18 @@ services:
 
   zabbix-agent2:
     image: zabbix/zabbix-agent2:${VERSION}
-    environment:
-      ZBX_STARTJAVAPOLLERS: 5
-      ZBX_STARTVMWARECOLLECTORS: 5
-      ZBX_HOSTNAME: zabbix-agent2
-      ZBX_SERVER_HOST: zabbix-server-pgsql
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
+    container_name: zabbix-agent2
+    hostname: zabbix-agent2
     networks:
-      default:
+      <<: *zabbix-network
         aliases:
           - zabbix-agent2
-      database_network:
+    environment:
+      <<: *zabbix-environment
+      ZBX_HOSTNAME: zabbix-agent2
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     labels:
       "com.centurylinklabs.watchtower.enable=true"
       "com.zabbix.description=Zabbix agent2"
@@ -83,28 +92,11 @@ services:
 
   zabbix-web-apache-pgsql:
     image: zabbix/zabbix-web-apache-pgsql:${VERSION}
-    environment:
-      ZBX_SERVER_HOST: ${ZBX_SERVER_HOST}
-      DB_SERVER_HOST: ${DB_SERVER_HOST}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      PHP_TZ: Africa/Johannesburg
-      ZBX_SERVER_NAME: Zabbix Container
-      # ZBX_SSO_SP_CERT: /etc/zabbix/web/certs/sp.crt
-      # ZBX_SSO_SP_KEY: /etc/zabbix/web/certs/sp.key
-      # ZBX_SSO_IDP_CERT: /etc/zabbix/web/certs/idp.crt
-      # ZBX_SSO_SETTINGS: {"strict":false, "baseurl":"https://zabbix.domain.com/", "use_proxy_headers":true}
     restart: unless-stopped
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /home/localadmin/zabbix-img/icon-sprite.svg:/usr/share/zabbix/assets/img/icon-sprite.svg
-      - /home/localadmin/zabbix-certs:/etc/zabbix/web/certs
-      - /home/localadmin/zabbix-scripts:/usr/lib/zabbix/alertscripts/
-    depends_on:
-     - zabbix-server-pgsql
+    container_name: zabbix-agent2
+    hostname: zabbix-agent2
     networks:
-      default:
+      <<: *zabbix-network
       database_network:
       traefik_proxy:
         aliases:
@@ -115,6 +107,19 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+    environment:
+      <<: *zabbix-environment
+      ZBX_SERVER_NAME: Zabbix Container
+      # ZBX_SSO_SP_CERT: /etc/zabbix/web/certs/sp.crt
+      # ZBX_SSO_SP_KEY: /etc/zabbix/web/certs/sp.key
+      # ZBX_SSO_IDP_CERT: /etc/zabbix/web/certs/idp.crt
+      # ZBX_SSO_SETTINGS: {"strict":false, "baseurl":"https://zabbix.domain.com/", "use_proxy_headers":true}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      # - ./zabbix-img/icon-sprite.svg:/usr/share/zabbix/assets/img/icon-sprite.svg
+      # - ./zabbix-certs:/etc/zabbix/web/certs
+    depends_on:
+     - zabbix-server-pgsql
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
       - "traefik.enable=true"
