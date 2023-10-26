@@ -1,7 +1,5 @@
 version: '3.5'
 
-volumes:
-  portainer_data:
 networks:
   traefik_proxy:
     name: traefik_proxy
@@ -11,6 +9,9 @@ networks:
       driver: default
       config:
         - subnet: "172.31.2.0/24"
+
+volumes:
+  portainer_data:
 
 services:
   portainer:
