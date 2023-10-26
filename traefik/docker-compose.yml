@@ -1,19 +1,35 @@
 version: '3.5'
 
+networks:
+  traefik_proxy:
+    name: traefik_proxy
+    external: true
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.31.3.0/24"
+
+volumes:
+  traefik-logs:
+
 services:
   traefik:
     image: traefik:latest
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
+    restart: always
+    container_name: traefik
+    hostname: traefik 
+    networks:
+      default:
+      traefik_proxy:
+        aliases: 
+          - docker.traefik.local
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 30s
-    networks:
-      - proxy
     ports:
       - target: 80
         published: 80
@@ -53,9 +69,3 @@ services:
       # - "traefik.http.routers.traefik-secure.tls.domains[1].main=${DOMAIN_1}"
       # - "traefik.http.routers.traefik-secure.tls.domains[1].sans=*.${DOMAIN_1}"
       - "traefik.http.routers.traefik-secure.service=api@internal"
-
-networks:
-  proxy:
-    external: true
-volumes:
-  traefik-logs:
