@@ -4,13 +4,18 @@ networks:
   database_network:
     name: database_network
     external: true
+  traefik_proxy:
+    name: traefik_proxy
+    external: true
   default:
     ipam:
       driver: default
       config:
         - subnet: "172.31.5.0/24"
+
 volumes:
   postgresql-data:
+  pgadmin-data:
 
 services:
   postgresql:
@@ -37,4 +42,37 @@ services:
       - postgresql-data:/var/lib/postgresql/data
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: always
+    container_name: pgadmin
+    hostname: pgadmin 
+    networks:
+      traefik_proxy:
+        aliases:
+          - docker.pgadmin.local
+      default:
+    healthcheck:
+      test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.entrypoints=https"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.rule=Host(`${TRAEFIK_URL}`)"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.passhostheader=true"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.port=${TRAEFIK_PORT}"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.scheme=${TRAEFIK_SCHEME}"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.tls=true"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.middlewares=private-chain@file"
 
