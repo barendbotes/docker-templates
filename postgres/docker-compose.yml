@@ -1,27 +1,41 @@
 version: '3.5'
+
+networks:
+  database_network:
+    name: database_network
+    external: true
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.31.5.0/24"
+volumes:
+  postgresql-data:
+
 services:
   postgresql:
     image: postgres:15-alpine
-    volumes:
-      - '/home/localadmin/postgresql-data:/var/lib/postgresql/data'
-    environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - 5432:5432
+    restart: always
+    container_name: postgresql
+    hostname: postgresql 
     networks:
-      backend_sql:
-        aliases:
-          - postgres.cloud
-    restart: unless-stopped
+      default:
+      database_network:
+        ipv4_address: 172.31.1.2
+        aliases: 
+          - docker.postgresql.local
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 30s
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 
-networks:
-  backend_sql:
-    external: true
