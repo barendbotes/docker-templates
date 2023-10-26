@@ -1,13 +1,23 @@
 version: '3.9'
 
+networks:
+  traefik_proxy:
+    name: traefik_proxy
+    external: true
+        
 services:
   whoami:
     image: traefik/whoami
+    container_name: whoami
+    hostname: whoami
+    restart: unless-stopped
     networks:
-      - proxy
+      traefik_proxy:
+        aliases: 
+          - docker.whoami.local
     labels:
       - traefik.enable=true
-      - traefik.docker.network=proxy
+      - traefik.docker.network=traefik_proxy
       - traefik.http.routers.${SERVICE}.entrypoints=https
       - traefik.http.routers.${SERVICE}.rule=Host(`${URL}`)
       - traefik.http.services.${SERVICE}-service.loadbalancer.server.port=${PORT}
@@ -19,6 +29,3 @@ services:
       - traefik.http.services.${SERVICE}-service.loadbalancer.sticky.cookie.name=${COOKIE}
       - traefik.http.routers.${SERVICE}.tls=true
       - traefik.http.routers.${SERVICE}.middlewares=public-chain@file
-networks:
-  proxy:
-    external: true
