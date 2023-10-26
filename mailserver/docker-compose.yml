@@ -12,16 +12,17 @@ volumes:
   mailserver-state:
   mailserver-logs:
   mailserver-config:
-  certbot_certbot-etc:
-    external: true
-
+  certbot-logs:
+  certbot-etc:
+  certbot-lib:
+  
 services:
   mailserver:
     image: docker.io/mailserver/docker-mailserver:latest
     restart: always
     container_name: mailserver
     hostname: mail
-    domainname: support.domain.com
+    domainname: ${DOMAIN}
     networks:
       default:
     healthcheck:
@@ -82,10 +83,20 @@ services:
       - mailserver-state:/var/mail-state/
       - mailserver-logs:/var/log/mail/
       - mailserver-config:/tmp/docker-mailserver/
-      - certbot_certbot-etc:/etc/letsencrypt
+      - certbot-etc:/etc/letsencrypt
       - /etc/localtime:/etc/localtime:ro
     stop_grace_period: 1m
     cap_add:
       - NET_ADMIN
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
+
+  certbot:
+    image: certbot/dns-cloudflare
+    volumes: 
+      - certbot-etc:/etc/letsencrypt
+      - certbot-lib:/var/lib/letsencrypt/
+      - certbot-logs:/var/log/letsencrypt/
+      - ./secrets/cloudflare.ini:/.secrets/cloudflare.ini:ro
+    command: "certonly --non-interactive --dns-cloudflare --dns-cloudflare-credentials /.secrets/cloudflare.ini --preferred-challenges dns-01 --email ${EMAIL} -d *.${DOMAIN} --agree-tos"
+    # You can add email accounts by using the following command in CLI: setup email add email@domain.com
