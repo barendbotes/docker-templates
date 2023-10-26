@@ -18,7 +18,7 @@ services:
       - traefik.http.services.${SERVICE}-service.loadbalancer.sticky.cookie.samesite=strict
       - traefik.http.services.${SERVICE}-service.loadbalancer.sticky.cookie.name=${COOKIE}
       - traefik.http.routers.${SERVICE}.tls=true
-      - traefik.http.routers.${SERVICE}.middlewares=secured-chain@file
+      - traefik.http.routers.${SERVICE}.middlewares=public-chain@file
 networks:
   proxy:
     external: true
