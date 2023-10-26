@@ -27,7 +27,7 @@ services:
         aliases:
           - docker.grafana.local
       database_network:
-        ipv4_address: 172.31.1.5
+        ipv4_address: 172.31.1.6
       default:
     env_file: .env # stack.env if using Portainer
     volumes:
