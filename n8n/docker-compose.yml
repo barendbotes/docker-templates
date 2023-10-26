@@ -81,6 +81,7 @@ services:
     networks:
       <<: *n8n-network
       database_network:
+        ipv4_address: 172.31.1.6
       traefik_proxy:
         aliases:
           - docker.n8n.local
@@ -102,5 +103,6 @@ services:
     networks:
       <<: *n8n-network
       database_network:
+        ipv4_address: 172.31.1.7
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
