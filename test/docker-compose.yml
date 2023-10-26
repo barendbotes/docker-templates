@@ -3,7 +3,7 @@ services:
 web:
   image: nginx
   volumes:
-   - ./templates:/etc/nginx/templates
+   - ./html:/usr/share/nginx/html
   ports:
    - "8281:80"
   environment:
