@@ -1,5 +1,17 @@
 version: '3.5'
 
+volumes:
+  portainer_data:
+networks:
+  traefik_proxy:
+    name: traefik_proxy
+    external: true
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.31.2.0/24"
+
 services:
   portainer:
     image: portainer/portainer-ce:latest
@@ -9,7 +21,7 @@ services:
     networks:
       default:
       traefik_proxy:
-        aliases:
+        aliases: 
           - docker.portainer.local
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
@@ -28,14 +40,3 @@ services:
     volumes:
       - portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
-volumes:
-  portainer_data:
-networks:
-  traefik_proxy:
-    name: traefik_proxy
-    external: true
-  default:
-    ipam:
-      driver: default
-      config:
-        - subnet: "172.31.2.0/24"
