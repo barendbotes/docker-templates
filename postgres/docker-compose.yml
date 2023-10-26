@@ -1,0 +1,27 @@
+version: '3.5'
+services:
+  postgresql:
+    image: postgres:15-alpine
+    volumes:
+      - '/home/localadmin/postgresql-data:/var/lib/postgresql/data'
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+    networks:
+      backend_sql:
+        aliases:
+          - postgres.cloud
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  backend_sql:
+    external: true
