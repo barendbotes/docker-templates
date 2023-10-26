@@ -1,35 +1,57 @@
 version: '3.5'
+
+networks:
+  traefik_proxy:
+    name: traefik_proxy
+    external: true
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.31.4.0/24"
+
+volumes:
+  crowdsec-db:
+  crowdsec-config:
+  traefik_traefik-logs:
+    external: true
+
 services:
   crowdsec:
     image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    hostname: crowdsec 
+    restart: always
     environment:
       GID: "${GID-1000}"
-      COLLECTIONS: "crowdsecurity/linux crowdsecurity/traefik"
+      COLLECTIONS: "crowdsecurity/linux crowdsecurity/traefik firix/authentik"
     volumes:
       - crowdsec-db:/var/lib/crowdsec/data/
       - crowdsec-config:/etc/crowdsec/
       - traefik_traefik-logs:/var/log/traefik/:ro
       - ./acquis.yaml:/etc/crowdsec/acquis.yaml:ro
     networks:
-      - proxy
-    restart: unless-stopped
+      default:
+      traefik_proxy:
+        aliases: 
+          - docker.crowdsec.local
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
-  bouncer-traefik:
+  bouncer:
     image: docker.io/fbonalair/traefik-crowdsec-bouncer:latest
+    container_name: bouncer
+    hostname: bouncer 
+    restart: always
     environment:
-      CROWDSEC_BOUNCER_API_KEY: super-secure-bouncer-api-key
+      CROWDSEC_BOUNCER_API_KEY: 882882ac8acdf60dacc008dd3de68cf0 # Insert your generated key
       CROWDSEC_AGENT_HOST: crowdsec:8080
       CROWDSEC_BOUNCER_LOG_LEVEL: 0
       GIN_MODE: release
     networks:
-      - proxy
-    restart: unless-stopped
-
-networks:
-  proxy:
-    external: true
-volumes:
-  crowdsec-db:
-  crowdsec-config:
-  traefik_traefik-logs:
-    external: true
+      default:
+      traefik_proxy:
+        aliases: 
+          - docker.bouncer.local
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
