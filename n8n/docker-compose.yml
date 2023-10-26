@@ -1,0 +1,106 @@
+version: "3.5"
+
+networks:
+  traefik_proxy:
+    name: traefik_proxy
+    external: true
+  database_network:
+    name: database_network
+    external: true
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.31.10.0/24"
+
+volumes:
+  n8n-data:
+  n8n-files:
+
+x-shared:
+  n8n-services: &n8n-services
+    image: n8nio/n8n
+    restart: always
+    environment:
+      - N8N_LOG_LEVEL=debug
+      - DOMAIN_NAME=domain.com
+      - SUBDOMAIN=automate
+      - NODE_FUNCTION_ALLOW_BUILTIN=*
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=docker.postgresql.local
+      - DB_POSTGRESDB_DATABASE=${DB_POSTGRESDB_DATABASE}
+      - DB_POSTGRESDB_USER=${DB_POSTGRESDB_USER}
+      - DB_POSTGRESDB_PASSWORD=${DB_POSTGRESDB_PASSWORD}
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_HEALTH_CHECK_ACTIVE=true
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - N8N_HOST=${TRAEFIK_URL}
+      - N8N_PORT=${TRAEFIK_PORT}
+      - N8N_PROTOCOL=${TRAEFIK_SCHEME}
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://${TRAEFIK_URL}/
+      - VUE_APP_URL_BASE_API=http://n8n:5678/
+      - WEBHOOK_TUNNEL_URL=https://${TRAEFIK_URL}/
+      - GENERIC_TIMEZONE=Africa/Johannesburg
+      # - N8N_EMAIL_MODE=smtp
+      # - N8N_SMTP_HOST=mail.support.domain.com
+      # - N8N_SMTP_PORT=587
+      # - N8N_SMTP_USER=noreply@support.domain.com
+      # - N8N_SMTP_PASS=${N8N_SMTP_PASS}
+      # - N8N_SMTP_SENDER=noreply@support.domain.com
+      # - N8N_SMTP_SSL=true
+      - N8N_EDITOR_BASE_URL=https://${TRAEFIK_URL}/
+      - N8N_ENCRYPTION_KEY=<super-secure-encryption-key>
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - n8n-files:/files
+    networks: &n8n-network
+      default:
+
+services:
+  redis:
+    image: redis:6-alpine
+    restart: unless-stopped
+    volumes:
+      - /home/localadmin/n8n-data/redis:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      <<: *n8n-services
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  n8n:
+    <<: *n8n-services
+    networks:
+      <<: *n8n-network
+      database_network:
+      traefik_proxy:
+        aliases:
+          - docker.n8n.local
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.entrypoints=https"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.rule=Host(`${TRAEFIK_URL}`)"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.passhostheader=true"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.port=${TRAEFIK_PORT}"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.scheme=${TRAEFIK_SCHEME}"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.tls=true"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.middlewares=public-chain@file"
+
+  n8n-worker:
+    <<: *n8n-services
+    command: "worker"
+    networks:
+      <<: *n8n-network
+      database_network:
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
