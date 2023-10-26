@@ -25,6 +25,8 @@ services:
     hostname: postgresql 
     networks:
       default:
+        aliases: 
+          - docker.postgresql.local
       database_network:
         ipv4_address: 172.31.1.2
         aliases: 
