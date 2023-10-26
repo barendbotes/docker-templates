@@ -32,8 +32,7 @@ services:
       start_period: 30s
     ports:
       - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file: .env # stack.env when in Portainer
     volumes:
       - postgresql-data:/var/lib/postgresql/data
     labels:
