@@ -1,7 +1,0 @@
-version: "3.5"
-services:
-  maintenance:
-    build:
-      context: .
-    ports:
-      - "8181:80"
