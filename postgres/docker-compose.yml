@@ -8,10 +8,6 @@ networks:
     name: traefik_proxy
     external: true
   default:
-    ipam:
-      driver: default
-      config:
-        - subnet: "172.31.5.0/24"
 
 volumes:
   postgresql-data:
@@ -26,7 +22,6 @@ services:
     networks:
       default:
       database_network:
-        ipv4_address: 172.31.1.2
         aliases: 
           - docker.postgresql.local
     healthcheck:
@@ -55,7 +50,6 @@ services:
         aliases:
           - docker.pgadmin.local
       database_network:
-        ipv4_address: 172.31.1.3
     healthcheck:
       test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
       interval: 10s
