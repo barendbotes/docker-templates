@@ -1,8 +1,8 @@
 version: '3.5'
 
 networks:
-  traefik_proxy:
-    name: traefik_proxy
+  crowdsec_network:
+    name: crowdsec_network
     external: true
   default:
 
@@ -28,7 +28,7 @@ services:
       - ./acquis.yaml:/etc/crowdsec/acquis.yaml:ro
     networks:
       default:
-      traefik_proxy:
+      crowdsec_network:
         aliases: 
           - docker.crowdsec.local
     labels:
@@ -46,7 +46,7 @@ services:
       GIN_MODE: release
     networks:
       default:
-      traefik_proxy:
+      crowdsec_network:
         aliases: 
           - docker.bouncer.local
     labels:
