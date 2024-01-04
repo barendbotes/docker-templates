@@ -4,6 +4,9 @@ networks:
   traefik_proxy:
     name: traefik_proxy
     external: true
+  crowdsec_network:
+    name: crowdsec_network
+    external: true
   default:
 
 volumes:
@@ -17,6 +20,7 @@ services:
     hostname: traefik 
     networks:
       default:
+      crowdsec_network:
       traefik_proxy:
         aliases: 
           - docker.traefik.local
