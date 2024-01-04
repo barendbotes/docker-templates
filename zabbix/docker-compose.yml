@@ -28,6 +28,8 @@ x-shared:
       PHP_TZ: Africa/Johannesburg
     networks: &zabbix-network
       default:
+        aliases: 
+          - zabbix-server
 
 services:
   zabbix-server-pgsql:
@@ -37,6 +39,7 @@ services:
     hostname: zabbix-server-pgsql
     networks:
       <<: *zabbix-network
+      default:
         aliases:
           - zabbix-server
           - zabbix-server-pgsql
@@ -57,12 +60,12 @@ services:
       - zabbix-export:/var/lib/zabbix/export
       - zabbix-snmptraps:/var/lib/zabbix/snmptraps
     labels:
-      "com.centurylinklabs.watchtower.enable=true"
-      "com.zabbix.description=Zabbix server with pgsql database support"
-      "com.zabbix.company=Zabbix LLC"
-      "com.zabbix.component=zabbix-server-pgsql"
-      "com.zabbix.dbtype=pgsql"
-      "com.zabbix.os=ubuntu"
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.zabbix.description=Zabbix server with pgsql database support"
+      - "com.zabbix.company=Zabbix LLC"
+      - "com.zabbix.component=zabbix-server-pgsql"
+      - "com.zabbix.dbtype=pgsql"
+      - "com.zabbix.os=ubuntu"
 
   zabbix-agent2:
     image: zabbix/zabbix-agent2:${VERSION}
@@ -71,6 +74,7 @@ services:
     hostname: zabbix-agent2
     networks:
       <<: *zabbix-network
+      default:
         aliases:
           - zabbix-agent2
     environment:
@@ -79,18 +83,18 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
     labels:
-      "com.centurylinklabs.watchtower.enable=true"
-      "com.zabbix.description=Zabbix agent2"
-      "com.zabbix.company=Zabbix LLC"
-      "com.zabbix.component=zabbix-agent2"
-      "com.zabbix.dbtype=pgsql"
-      "com.zabbix.os=ubuntu"
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.zabbix.description=Zabbix agent2"
+      - "com.zabbix.company=Zabbix LLC"
+      - "com.zabbix.component=zabbix-agent2"
+      - "com.zabbix.dbtype=pgsql"
+      - "com.zabbix.os=ubuntu"
 
   zabbix-web-apache-pgsql:
     image: zabbix/zabbix-web-apache-pgsql:${VERSION}
     restart: unless-stopped
-    container_name: zabbix-agent2
-    hostname: zabbix-agent2
+    container_name: zabbix-web-apache-pgsql
+    hostname: zabbix-web-apache-pgsql
     networks:
       <<: *zabbix-network
       database_network:
