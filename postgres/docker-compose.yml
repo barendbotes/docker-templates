@@ -71,5 +71,5 @@ services:
       - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.port=${TRAEFIK_PORT}"
       - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.scheme=${TRAEFIK_SCHEME}"
       - "traefik.http.routers.${TRAEFIK_SERVICE}.tls=true"
-      - "traefik.http.routers.${TRAEFIK_SERVICE}.middlewares=private-chain@file"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.middlewares=public-chain@file"
 
