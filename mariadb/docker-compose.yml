@@ -1,0 +1,47 @@
+version: '3.5'
+
+networks:
+  database_network:
+    name: database_network
+    external: true
+  default:
+
+volumes:
+  mariadb-data:
+
+services:
+  mariadb:
+    image: mariadb:11.2
+    restart: always
+    container_name: mariadb
+    hostname: mariadb 
+    networks:
+      default:
+      database_network:
+        aliases: 
+          - docker.mariadb.local
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", '-p${MYSQL_ROOT_PASSWORD}']
+      interval: 20s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    command: [ "mysqld",
+                "--bind-address=0.0.0.0",
+                "--default_authentication_plugin=mysql_native_password",
+                "--max_allowed_packet=2G",
+                "--performance_schema=ON",
+                "--performance-schema-instrument='stage/%=ON'",
+                "--performance-schema-consumer-events-stages-current=ON",
+                "--performance-schema-consumer-events-stages-history=ON",
+                "--performance-schema-consumer-events-stages-history-long=ON"
+                ]
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=Africa/Johannesburg
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
