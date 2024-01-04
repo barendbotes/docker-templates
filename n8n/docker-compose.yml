@@ -4,9 +4,6 @@ networks:
   traefik_proxy:
     name: traefik_proxy
     external: true
-  database_network:
-    name: database_network
-    external: true
   default:
 
 volumes:
@@ -19,20 +16,18 @@ x-shared:
     restart: always
     environment:
       - N8N_LOG_LEVEL=debug
+      - N8N_LOG_FILE_MAXSIZE=500
       - DOMAIN_NAME=domain.com
       - SUBDOMAIN=automate
       - NODE_FUNCTION_ALLOW_BUILTIN=*
-      - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_HOST=docker.postgresql.local
-      - DB_POSTGRESDB_DATABASE=${DB_POSTGRESDB_DATABASE}
-      - DB_POSTGRESDB_USER=${DB_POSTGRESDB_USER}
-      - DB_POSTGRESDB_PASSWORD=${DB_POSTGRESDB_PASSWORD}
+      - DB_SQLITE_VACUUM_ON_STARTUP=true
       - EXECUTIONS_MODE=queue
       - QUEUE_BULL_REDIS_HOST=redis
       - QUEUE_HEALTH_CHECK_ACTIVE=true
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - EXECUTIONS_DATA_PRUNE=true
       - EXECUTIONS_DATA_MAX_AGE=168
+      - EXECUTIONS_DATA_PRUNE_MAX_COUNT=5000
       - N8N_HOST=${TRAEFIK_URL}
       - N8N_PORT=${TRAEFIK_PORT}
       - N8N_PROTOCOL=${TRAEFIK_SCHEME}
@@ -76,7 +71,6 @@ services:
     <<: *n8n-services
     networks:
       <<: *n8n-network
-      database_network:
       traefik_proxy:
         aliases:
           - docker.n8n.local
@@ -97,6 +91,5 @@ services:
     command: "worker"
     networks:
       <<: *n8n-network
-      database_network:
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
