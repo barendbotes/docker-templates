@@ -18,11 +18,11 @@ services:
     image: postgres:15-alpine
     restart: always
     container_name: postgresql
-    hostname: postgresql 
+    hostname: postgresql
     networks:
       default:
       database_network:
-        aliases: 
+        aliases:
           - docker.postgresql.local
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
@@ -43,7 +43,7 @@ services:
     image: dpage/pgadmin4:latest
     restart: always
     container_name: pgadmin
-    hostname: pgadmin 
+    hostname: pgadmin
     networks:
       default:
       traefik_proxy:
@@ -72,4 +72,3 @@ services:
       - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.scheme=${TRAEFIK_SCHEME}"
       - "traefik.http.routers.${TRAEFIK_SERVICE}.tls=true"
       - "traefik.http.routers.${TRAEFIK_SERVICE}.middlewares=public-chain@file"
-
