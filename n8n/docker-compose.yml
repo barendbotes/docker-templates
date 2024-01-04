@@ -4,6 +4,9 @@ networks:
   traefik_proxy:
     name: traefik_proxy
     external: true
+  database_network:
+    name: database_network
+    external: true
   default:
 
 volumes:
@@ -54,6 +57,7 @@ x-shared:
       - n8n-data:/home/node/.n8n
       - n8n-files:/files
     networks: &n8n-network
+      database_network:
       default:
 
 services:
@@ -68,7 +72,7 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      <<: *n8n-services
+      <<: *n8n-network
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 
