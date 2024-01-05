@@ -12,7 +12,8 @@ networks:
 volumes:
   public:
   storage:
-
+  
+services:
   invoiceninja-web:
     image: nginx
     restart: unless-stopped
