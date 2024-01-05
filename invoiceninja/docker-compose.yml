@@ -1,0 +1,55 @@
+version: "3.5"
+
+networks:
+  traefik_proxy:
+    name: traefik_proxy
+    external: true
+  database_network:
+    name: database_network
+    external: true
+  default:
+
+volumes:
+  public:
+  storage:
+
+  invoiceninja-web:
+    image: nginx
+    restart: unless-stopped
+    container_name: invoiceninja-web
+    hostname: invoiceninja-web
+    depends_on:
+      - invoiceninja-app
+    networks:
+      traefik_proxy:
+        aliases:
+          - docker.grafana.local
+      default:
+    env_file: .env
+    volumes:
+      - public:/var/www/app/public:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.entrypoints=https"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.rule=Host(`${TRAEFIK_URL}`)"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.passhostheader=true"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.port=${TRAEFIK_PORT}"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.scheme=${TRAEFIK_SCHEME}"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.tls=true"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.middlewares=public-chain@file"
+
+  invoiceninja-app:
+    image: invoiceninja/invoiceninja:5
+    restart: unless-stopped
+    container_name: invoiceninja-app
+    hostname: invoiceninja-app
+    networks:
+      database_network:
+      default:
+    env_file: .env
+    volumes:
+      - public:/var/www/app/public:rw,delegated
+      - storage:/var/www/app/storage:rw,delegated
+      - ./php/php.ini:/usr/local/etc/php/php.ini
+      - ./php/php-cli.ini:/usr/local/etc/php/php-cli.ini
