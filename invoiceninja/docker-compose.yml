@@ -26,7 +26,7 @@ services:
         aliases:
           - docker.grafana.local
       default:
-    env_file: .env
+    env_file: stack.env
     volumes:
       - ./nginx/in-vhost.conf:/etc/nginx/conf.d/in-vhost.conf:ro
       - public:/var/www/app/public:ro
@@ -49,9 +49,18 @@ services:
     networks:
       database_network:
       default:
-    env_file: .env
+    env_file: stack.env
     volumes:
       - public:/var/www/app/public:rw,delegated
       - storage:/var/www/app/storage:rw,delegated
       - ./php/php.ini:/usr/local/etc/php/php.ini
       - ./php/php-cli.ini:/usr/local/etc/php/php-cli.ini
+
+  invoiceninja-init:
+    image: busybox:1.28
+    restart: on-failure
+    init: true
+    command: chown -R 1500:1500 /var/www/app && chmod 755 /var/www/app/public
+    volumes:
+      - public:/var/www/app/public:rw,delegated
+      - storage:/var/www/app/storage:rw,delegated
