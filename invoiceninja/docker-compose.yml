@@ -27,6 +27,7 @@ volumes:
       default:
     env_file: .env
     volumes:
+      - ./nginx/in-vhost.conf:/etc/nginx/conf.d/in-vhost.conf:ro
       - public:/var/www/app/public:ro
     labels:
       - "traefik.enable=true"
