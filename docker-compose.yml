@@ -1,0 +1,49 @@
+version: '3.5'
+
+### Define networks here
+networks:
+  traefik_proxy:
+    name: traefik_proxy
+    external: true
+  default:
+
+## Define volumes here
+volumes:
+  data:
+    driver: local
+
+services:
+  container:
+    image: container/image
+    container_name: container
+    hostname: container
+    restart: unless-stopped
+    extra_hosts:
+      - "hostname1:192.168.0.1"
+      - "hostname2:192.168.0.2"
+    networks:
+      default:
+      traefik_proxy:
+        aliases: 
+          - docker.container.local
+    volumes:
+      - data:/etc/data
+    command: "/bin/bash -S"
+    environment:
+      - ENV_VAR=true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.entrypoints=https"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.rule=Host(`${TRAEFIK_URL}`)"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.passhostheader=true"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.port=${TRAEFIK_PORT}"
+      - "traefik.http.services.${TRAEFIK_SERVICE}-service.loadbalancer.server.scheme=${TRAEFIK_SCHEME}"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.tls=true"
+      - "traefik.http.routers.${TRAEFIK_SERVICE}.middlewares=public-chain@file"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
